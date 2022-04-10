@@ -3,15 +3,11 @@ import fs from 'fs';
 
 let d = new Drawing();
 
-d.setUnits('Decimeters');
-d.drawText(10, 0, 10, 0, 'Hello World'); // draw text in the default layer named "0"
-d.addLayer('l_green', Drawing.ACI.GREEN, 'CONTINUOUS');
-d.setActiveLayer('l_green');
-d.drawText(20, -70, 10, 0, 'go green!');
+d.setUnits('Centimeters');
 
 //or fluent
 d.addLayer('l_yellow', Drawing.ACI.YELLOW, 'DOTTED')
   .setActiveLayer('l_yellow')
-  .drawCircle(50, -30, 25);
+  .drawCircle(0, 0, 50);
 
 fs.writeFileSync('output/gasket.dxf', d.toDxfString());

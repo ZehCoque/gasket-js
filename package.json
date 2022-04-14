@@ -17,7 +17,8 @@
   },
   "devDependencies": {
     "@types/node": "^17.0.23",
+    "aws-lambda-nodejs-esbuild": "^1.1.6",
     "nodemon": "^2.0.15",
-    "aws-lambda-nodejs-esbuild": "^1.1.6"
+    "serverless-esbuild": "^1.26.2"
   }
 }

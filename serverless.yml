@@ -5,9 +5,10 @@ provider:
   name: aws
   runtime: nodejs14.x
   region: us-east-2
-  timeout: 120
   memorySize: 128
   profile: serverless-admin
+  environment:
+    API_KEY: 'AUHaWvNJ99slebQ49haZ'
 
 functions:
   api:

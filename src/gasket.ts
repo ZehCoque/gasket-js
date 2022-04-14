@@ -10,6 +10,10 @@ app.get('/gasket', (req, res, next) => {
   const B = query.B; // Outside Overall Width
   const H = query.H; // Cross Section
 
+  if (!query.apiKey || query.apiKey !== process.env.API_KEY) {
+    return res.status(401).send('Unauthorized');
+  }
+
   if (!A || !B || !H) {
     return res.status(400).send({ error: 'Missing required parameters' });
   }

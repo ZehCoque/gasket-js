@@ -18,7 +18,6 @@ functions:
           path: /gasket
           method: GET
           cors: true
-          private: true
 
 plugins:
   - serverless-esbuild

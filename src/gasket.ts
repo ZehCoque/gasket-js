@@ -64,7 +64,10 @@ app.get('/gasket', (req, res, next) => {
   d.drawLine(arcXPosition2[0], arcRadius2, arcXPosition2[1], arcRadius2);
   d.drawLine(arcXPosition2[0], -arcRadius2, arcXPosition2[1], -arcRadius2);
 
-  res.setHeader('Content-disposition', `attachment; filename=gasket.dxf`);
+  res.setHeader(
+    'Content-disposition',
+    `attachment; filename=gasket-A${A}B${B}H${H}.dxf`
+  );
   res.set('Content-Type', 'text/dxf');
   res.status(200).send(d.toDxfString());
 });

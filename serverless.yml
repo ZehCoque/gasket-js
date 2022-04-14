@@ -1,0 +1,23 @@
+service: gasket-js
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: us-east-2
+  timeout: 120
+  memorySize: 128
+  profile: serverless-admin
+
+functions:
+  api:
+    handler: src/gasket.handler
+    events:
+      - http:
+          path: /gasket
+          method: GET
+          cors: true
+          private: true
+
+plugins:
+  - serverless-esbuild

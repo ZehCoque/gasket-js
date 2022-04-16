@@ -3,44 +3,69 @@ import serverless from 'serverless-http';
 import express from 'express';
 const app = express();
 
-app.get('/gasket', (req, res, next) => {
-  const query = req.query;
-
-  const A = query.A; // Outside Overall Length
-  const B = query.B; // Outside Overall Width
-  const H = query.H; // Cross Section
-
-  if (!query.apiKey || query.apiKey !== process.env.API_KEY) {
-    return res.status(401).send('Unauthorized');
-  }
-
+const queryCheck = (
+  A,
+  B,
+  C,
+  D,
+  E,
+  F,
+  I,
+  H,
+  holeConfiguration,
+  holeDiameter
+) => {
   if (!A || !B || !H) {
-    return res.status(400).send({ error: 'Missing required parameters' });
+    throw new Error('Missing required query parameters');
   }
 
   if (B >= A) {
-    return res.status(400).send({
-      error:
-        'Outside Overall Length (A) must be greater than Outside Overall Width (B)',
-    });
+    throw new Error(
+      'Outside Overall Length (A) must be greater than Outside Overall Width (B)'
+    );
   }
 
   if (H >= A) {
-    return res.status(400).send({
-      error: 'Cross Section (H) must be less than Outside Overall Length (A)',
-    });
+    throw new Error(
+      'Cross Section (H) must be less than Outside Overall Length (A)'
+    );
   }
 
   if (H >= B) {
-    return res.status(400).send({
-      error: 'Cross Section (H) must be less than Outside Overall Width (B)',
-    });
+    throw new Error(
+      'Cross Section (H) must be less than Outside Overall Width (B)'
+    );
   }
 
   if (H <= 0 || A <= 0 || B <= 0) {
-    return res
-      .status(400)
-      .send({ error: 'All dimensions must be greater than zero' });
+    throw new Error('All dimensions must be greater than zero');
+  }
+};
+
+app.get('/gasket', (req, res) => {
+  const query = req.query;
+
+  const apiKey = query.apiKey;
+
+  if (!apiKey || apiKey !== process.env.API_KEY) {
+    return res.status(401).send('Unauthorized');
+  }
+
+  const A = query.A; // Outside Overall Length
+  const B = query.B; // Outside Overall Width
+  const C = query.C; // BDC Long C-C
+  const D = query.D; // BDC Short C-C
+  const E = query.E; // Hole Spacing Arc C-C
+  const F = query.F; // Hole Spacing Run C-C
+  const I = query.I; // Transition Spacing From Run to Arc
+  const H = query.H; // Cross Section
+  const holeConfiguration: 'straddled' | 'centered' = query.holeConfiguration;
+  const holeDiameter = query.holeDiameter; // Hole Diameters
+
+  try {
+    queryCheck(A, B, C, D, E, F, I, H, holeConfiguration, holeDiameter);
+  } catch (e) {
+    return res.status(400).send({ message: e.message });
   }
 
   const d = new Drawing();

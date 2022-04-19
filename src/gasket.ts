@@ -15,8 +15,21 @@ const queryCheck = (
   holeConfiguration,
   holeDiameter
 ) => {
-  if (!A || !B || !H) {
-    throw new Error('Missing required query parameters');
+  if (
+    !A ||
+    !B ||
+    !C ||
+    !D ||
+    !E ||
+    !F ||
+    !I ||
+    !H ||
+    !holeConfiguration ||
+    !holeDiameter
+  ) {
+    throw new Error(
+      'Missing required query parameters. All parameters must be greater than 0.'
+    );
   }
 
   if (B >= A) {
@@ -36,10 +49,6 @@ const queryCheck = (
       'Cross Section (H) must be less than Outside Overall Width (B)'
     );
   }
-
-  if (H <= 0 || A <= 0 || B <= 0) {
-    throw new Error('All dimensions must be greater than zero');
-  }
 };
 
 app.get('/gasket', (req, res) => {
@@ -47,20 +56,20 @@ app.get('/gasket', (req, res) => {
 
   const apiKey = query.apiKey;
 
-  if (!apiKey || apiKey !== process.env.API_KEY) {
+  if (!apiKey || apiKey !== (process.env.API_KEY || 'localTest')) {
     return res.status(401).send('Unauthorized');
   }
 
-  const A = query.A; // Outside Overall Length
-  const B = query.B; // Outside Overall Width
-  const C = query.C; // BDC Long C-C
-  const D = query.D; // BDC Short C-C
-  const E = query.E; // Hole Spacing Arc C-C
-  const F = query.F; // Hole Spacing Run C-C
-  const I = query.I; // Transition Spacing From Run to Arc
-  const H = query.H; // Cross Section
+  const A = Number(query.A); // Outside Overall Length
+  const B = Number(query.B); // Outside Overall Width
+  const C = Number(query.C); // BDC Long C-C
+  const D = Number(query.D); // BDC Short C-C
+  const E = Number(query.E); // Hole Spacing Arc C-C
+  const F = Number(query.F); // Hole Spacing Run C-C
+  const I = Number(query.I); // Transition Spacing From Run to Arc
+  const H = Number(query.H); // Cross Section
   const holeConfiguration: 'straddled' | 'centered' = query.holeConfiguration;
-  const holeDiameter = query.holeDiameter; // Hole Diameters
+  const holeDiameter = Number(query.holeDiameter); // Hole Diameters
 
   try {
     queryCheck(A, B, C, D, E, F, I, H, holeConfiguration, holeDiameter);
@@ -81,13 +90,29 @@ app.get('/gasket', (req, res) => {
   d.drawLine(arcXPosition1[0], arcRadius1, arcXPosition1[1], arcRadius1);
   d.drawLine(arcXPosition1[0], -arcRadius1, arcXPosition1[1], -arcRadius1);
 
-  const arcRadius2 = arcRadius1 - H / 2;
-  const arcXPosition2 = [arcXPosition1[0] + H / 2, arcXPosition1[1] - H / 2];
+  const arcRadius2 = arcRadius1 - H;
+  const arcXPosition2 = [arcXPosition1[0], arcXPosition1[1]];
 
   d.drawArc(arcXPosition2[0], 0, arcRadius2, 90, 270);
   d.drawArc(arcXPosition2[1], 0, arcRadius2, -90, 90);
   d.drawLine(arcXPosition2[0], arcRadius2, arcXPosition2[1], arcRadius2);
   d.drawLine(arcXPosition2[0], -arcRadius2, arcXPosition2[1], -arcRadius2);
+
+  const arcRadius3 = D / 2;
+  const arcXPosition3 = [-C / 2 + arcRadius3, C / 2 - arcRadius3];
+
+  const holeRadius = holeDiameter / 2;
+  const thetaAdd = 2 * Math.asin(E / D);
+
+  let theta = Math.PI; // TODO: Change if straddled
+  while (theta > Math.PI / 2) {
+    d.drawCircle(
+      arcRadius3 * Math.cos(theta) + arcXPosition3[0],
+      arcRadius3 * Math.sin(theta),
+      holeRadius
+    );
+    theta -= thetaAdd;
+  }
 
   res.setHeader(
     'Content-disposition',
@@ -103,7 +128,7 @@ app.use((req, res, next) => {
   });
 });
 
-const port = 3000;
+const port = 5000;
 app.listen(port);
 console.log(`listening on http://localhost:${port}`);
 

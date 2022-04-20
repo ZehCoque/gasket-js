@@ -79,9 +79,11 @@ app.get('/gasket', (req, res) => {
 
   const d = new Drawing();
 
-  d.addLayer('gasket', Drawing.ACI.YELLOW, 'CONTINUOUS').setActiveLayer(
+  d.addLayer('gasket', Drawing.ACI.WHITE, 'CONTINUOUS').setActiveLayer(
     'gasket'
   );
+
+  let holeCount = 0;
 
   const arcRadius1 = B / 2;
   const arcXPosition1 = [-A / 2 + arcRadius1, A / 2 - arcRadius1];
@@ -101,22 +103,62 @@ app.get('/gasket', (req, res) => {
   const arcRadius3 = D / 2;
   const arcXPosition3 = [-C / 2 + arcRadius3, C / 2 - arcRadius3];
 
-  const holeRadius = holeDiameter / 2;
-  const thetaAdd = 2 * Math.asin(E / D);
+  let alpha = 2 * Math.asin(E / D);
+  let theta = holeConfiguration === 'straddled' ? Math.PI - alpha / 2 : Math.PI; // TODO: Change if straddled
 
-  let theta = Math.PI; // TODO: Change if straddled
-  while (theta > Math.PI / 2) {
-    d.drawCircle(
-      arcRadius3 * Math.cos(theta) + arcXPosition3[0],
-      arcRadius3 * Math.sin(theta),
-      holeRadius
-    );
-    theta -= thetaAdd;
+  const holeRadius = holeDiameter / 2;
+  let coordX = arcRadius3 * Math.cos(theta) + arcXPosition3[0];
+  let coordY = arcRadius3 * Math.sin(theta);
+  d.drawCircle(coordX, coordY, holeRadius);
+  holeCount++;
+  d.drawCircle(-coordX, -coordY, holeRadius);
+  holeCount++;
+
+  if (holeConfiguration === 'straddled') {
+    d.drawCircle(coordX, -coordY, holeRadius);
+    holeCount++;
+    d.drawCircle(-coordX, coordY, holeRadius);
+    holeCount++;
+  }
+
+  while (theta - alpha >= Math.PI / 2) {
+    coordX = arcRadius3 * Math.cos(theta - alpha) + arcXPosition3[0];
+    coordY = arcRadius3 * Math.sin(theta - alpha);
+    d.drawCircle(coordX, coordY, holeRadius);
+    holeCount++;
+    d.drawCircle(-coordX, -coordY, holeRadius);
+    holeCount++;
+    d.drawCircle(-coordX, coordY, holeRadius);
+    holeCount++;
+    d.drawCircle(coordX, -coordY, holeRadius);
+    holeCount++;
+    theta -= alpha;
+  }
+
+  alpha = 2 * Math.asin(I / D);
+  coordX = arcRadius3 * Math.cos(theta - alpha) + arcXPosition3[0];
+
+  const startingRunPosition = coordX;
+  while (startingRunPosition < -coordX) {
+    d.drawCircle(coordX, arcRadius3, holeRadius);
+    holeCount++;
+    d.drawCircle(coordX, -arcRadius3, holeRadius);
+    holeCount++;
+
+    coordX +=
+      F + coordX > -startingRunPosition ? -(startingRunPosition + coordX) : F;
+  }
+
+  if (coordX === -startingRunPosition) {
+    d.drawCircle(coordX, arcRadius3, holeRadius);
+    holeCount++;
+    d.drawCircle(coordX, -arcRadius3, holeRadius);
+    holeCount++;
   }
 
   res.setHeader(
     'Content-disposition',
-    `attachment; filename=gasket-A${A}B${B}H${H}.dxf`
+    `attachment; filename=Gasket ${holeCount} Hole A${A} B${B} C${C} D${D} E${E} F${F} I${I} H${H} ${holeConfiguration}.dxf`
   );
   res.set('Content-Type', 'text/dxf');
   res.status(200).send(d.toDxfString());

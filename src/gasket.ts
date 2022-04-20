@@ -4,16 +4,16 @@ import express from 'express';
 const app = express();
 
 const queryCheck = (
-  A,
-  B,
-  C,
-  D,
-  E,
-  F,
-  I,
-  H,
-  holeConfiguration,
-  holeDiameter
+  A: number,
+  B: number,
+  C: number,
+  D: number,
+  E: number,
+  F: number,
+  I: number,
+  H: number,
+  holeConfiguration: string,
+  holeDiameter: number
 ) => {
   if (
     !A ||
@@ -47,6 +47,42 @@ const queryCheck = (
   if (H >= B) {
     throw new Error(
       'Cross Section (H) must be less than Outside Overall Width (B)'
+    );
+  }
+
+  if (holeConfiguration !== 'straddled' && holeConfiguration !== 'centered') {
+    throw new Error(
+      'Hole Configuration must be one of the following: "straddled", "centered"'
+    );
+  }
+
+  if (D > C) {
+    throw new Error(
+      'Inside Overall Length (D) must be less than Inside Overall Width (C)'
+    );
+  }
+
+  if (C > A) {
+    throw new Error(
+      'Inside Overall Length (C) must be less than Outside Overall Length (A)'
+    );
+  }
+
+  if (D > B) {
+    throw new Error(
+      'Inside Overall Width (D) must be less than Outside Overall Width (B)'
+    );
+  }
+
+  if (E > H) {
+    throw new Error(
+      'Inside Overall Length (E) must be less than Cross Section (H)'
+    );
+  }
+
+  if (holeDiameter > E || holeDiameter > F || holeDiameter > I) {
+    throw new Error(
+      'Hole Diameter must be less than Inside Overall Length (E), Inside Overall Width (F), and Inside Overall Height (I)'
     );
   }
 };
@@ -145,15 +181,7 @@ app.get('/gasket', (req, res) => {
     d.drawCircle(coordX, -arcRadius3, holeRadius);
     holeCount++;
 
-    coordX +=
-      F + coordX > -startingRunPosition ? -(startingRunPosition + coordX) : F;
-  }
-
-  if (coordX === -startingRunPosition) {
-    d.drawCircle(coordX, arcRadius3, holeRadius);
-    holeCount++;
-    d.drawCircle(coordX, -arcRadius3, holeRadius);
-    holeCount++;
+    coordX += F;
   }
 
   res.setHeader(

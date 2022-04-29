@@ -74,12 +74,6 @@ const queryCheck = (
     );
   }
 
-  if (E > H) {
-    throw new Error(
-      'Inside Overall Length (E) must be less than Cross Section (H)'
-    );
-  }
-
   if (holeDiameter > E || holeDiameter > F || holeDiameter > I) {
     throw new Error(
       'Hole Diameter must be less than Inside Overall Length (E), Inside Overall Width (F), and Inside Overall Height (I)'

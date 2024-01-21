@@ -196,7 +196,6 @@ app.get('/gasket', (req, res) => {
     coordX = arcRadius3 * Math.cos(theta - alpha) + arcXPosition3[0];
     coordY = arcRadius3 * Math.sin(theta - alpha);
     drawCircle(d, -coordX, -coordY, holeRadius, holeCount++);
-    // drawCircle(d, coordX, -coordY, holeRadius, holeCount++);
     theta -= alpha;
   }
 

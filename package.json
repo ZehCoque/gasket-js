@@ -6,6 +6,7 @@
   "scripts": {
     "watch:node": "tsc --watch --project ./tsconfig.json",
     "watch:node:gasket:api": "nodemon ./js/gasket.js",
+    "deploy": "serverless deploy",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "José Antonio Rico Coque",

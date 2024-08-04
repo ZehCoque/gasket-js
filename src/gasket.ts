@@ -145,7 +145,7 @@ app.get('/gasket', (req, res) => {
   const arcXPosition3 = [-C / 2 + arcRadius3, C / 2 - arcRadius3];
 
   let alpha = 2 * Math.asin(E / D);
-  let theta = holeConfiguration === 'straddled' ? Math.PI - alpha / 2 : Math.PI; 
+  let theta = holeConfiguration === 'straddled' ? Math.PI - alpha / 2 : Math.PI;
 
   const holeRadius = holeDiameter / 2;
   let coordX = arcRadius3 * Math.cos(theta) + arcXPosition3[0];
@@ -156,7 +156,6 @@ app.get('/gasket', (req, res) => {
   }
 
   drawCircle(d, coordX, coordY, holeRadius, holeCount++);
-
 
   while (theta - alpha >= Math.PI / 2) {
     coordX = arcRadius3 * Math.cos(theta - alpha) + arcXPosition3[0];
@@ -169,13 +168,15 @@ app.get('/gasket', (req, res) => {
   coordX = arcRadius3 * Math.cos(theta - alpha) + arcXPosition3[0];
 
   let startingRunPosition = coordX;
-  while (startingRunPosition < (-coordX + F)) {
+  const acceptanceThreshold = Math.abs(coordX) * 0.001; // 0.1% of coordX
+
+  while (startingRunPosition < -coordX + acceptanceThreshold) {
     drawCircle(d, coordX, arcRadius3, holeRadius, holeCount++);
     coordX += F;
   }
 
   alpha = 2 * Math.asin(E / D);
-  theta = holeConfiguration === 'straddled' ? Math.PI - alpha / 2 : Math.PI; 
+  theta = holeConfiguration === 'straddled' ? Math.PI - alpha / 2 : Math.PI;
   let coordinates = [];
   while (theta - alpha >= Math.PI / 2) {
     coordX = arcRadius3 * Math.cos(theta - alpha) + arcXPosition3[0];
@@ -186,9 +187,9 @@ app.get('/gasket', (req, res) => {
 
   coordinates.reverse().forEach((coordinate) => {
     drawCircle(d, coordinate.x, coordinate.y, holeRadius, holeCount++);
-  } );
+  });
 
-  theta = holeConfiguration === 'straddled' ? Math.PI - alpha / 2 : Math.PI; 
+  theta = holeConfiguration === 'straddled' ? Math.PI - alpha / 2 : Math.PI;
   coordX = arcRadius3 * Math.cos(theta) + arcXPosition3[0];
   coordY = arcRadius3 * Math.sin(theta);
   if (holeConfiguration === 'straddled') {
@@ -197,7 +198,7 @@ app.get('/gasket', (req, res) => {
 
   drawCircle(d, -coordX, -coordY, holeRadius, holeCount++);
 
-  theta = holeConfiguration === 'straddled' ? Math.PI - alpha / 2 : Math.PI; 
+  theta = holeConfiguration === 'straddled' ? Math.PI - alpha / 2 : Math.PI;
   while (theta - alpha >= Math.PI / 2) {
     coordX = arcRadius3 * Math.cos(theta - alpha) + arcXPosition3[0];
     coordY = arcRadius3 * Math.sin(theta - alpha);
@@ -209,13 +210,13 @@ app.get('/gasket', (req, res) => {
   coordX = arcRadius3 * Math.cos(theta - alpha) + arcXPosition3[0];
 
   startingRunPosition = -coordX;
-  while (startingRunPosition > (coordX - F)) {
+  while (startingRunPosition > coordX - acceptanceThreshold) {
     drawCircle(d, -coordX, -arcRadius3, holeRadius, holeCount++);
     coordX += F;
   }
 
   alpha = 2 * Math.asin(E / D);
-  theta = holeConfiguration === 'straddled' ? Math.PI - alpha / 2 : Math.PI; 
+  theta = holeConfiguration === 'straddled' ? Math.PI - alpha / 2 : Math.PI;
   coordinates = [];
   while (theta - alpha >= Math.PI / 2) {
     coordX = arcRadius3 * Math.cos(theta - alpha) + arcXPosition3[0];
@@ -226,7 +227,7 @@ app.get('/gasket', (req, res) => {
 
   coordinates.reverse().forEach((coordinate) => {
     drawCircle(d, coordinate.x, coordinate.y, holeRadius, holeCount++);
-  } );
+  });
 
   res.setHeader(
     'Content-disposition',
